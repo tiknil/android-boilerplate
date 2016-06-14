@@ -105,11 +105,14 @@ if $confirm == "Y"
 
 	# 2. Elimino la cartella relativa al repo git ma lascio .gitignore
 	FileUtils.rm_rf(options[:project_name] + "/.git")
+	# 3. Elimino il file .vcs che indica la presenza di un repo git. Verrà ricreato una volta aperto il progetto quando sarà presente un repo inizializzato
+	FileUtils.rm options[:project_name] + "/.idea/vcs.xml"
+	
 	puts "Eliminati i riferimenti al repo git, mantenendo il file .gitignore"
 	
 	boilerplate_package_name_parts_array = $boilerplate_package_name.split(".")
 
-	# 3. Cambio il nome delle cartelle "com" nel primo campo del package name
+	# 4. Cambio il nome delle cartelle "com" nel primo campo del package name
 	src_folder = options[:project_name] + "/app/src"
 	for $subfolder in ["/androidTest", "/main", "/test"]
 		folder = src_folder + $subfolder + "/java"
@@ -123,11 +126,6 @@ if $confirm == "Y"
 	end
 	puts "Aggiornate le cartelle (package) che contengono le classi java"
 
-	# 4. Elimino il file .vcs che indica la presenza di un repo git. Verrà ricreato una volta aperto il progetto quando sarà presente un repo inizializzato
-	FileUtils.rm options[:project_name] + "/.idea/vcs.xml"
-
-	puts "Eliminato il file .vcs del progetto Boilerplate"
-	
 	Find.find(options[:project_name]).each do |file_name|
 		if (file_name != nil && 
 			File.file?(file_name) && 
@@ -152,6 +150,7 @@ if $confirm == "Y"
 				FileUtils.mv file_name, (file_name.sub $boilerplate_application_class, options[:project_name] + "Application.java")
 				#Aggiorno il nome del file per poterlo modificare
 				file_name.sub! $boilerplate_application_class, options[:project_name] + "Application.java"
+				puts "Aggiornata la classe Application"
 			end
 
 			# 6. Se Trovo il file "BoilerplateFonts" lo sostituisco con il nome del progetto + Fonts
@@ -159,6 +158,7 @@ if $confirm == "Y"
 				FileUtils.mv file_name, (file_name.sub $boilerplate_fonts_class, options[:project_name] + "Fonts.java")
 				#Aggiorno il nome del file per poterlo modificare
 				file_name.sub! $boilerplate_fonts_class, options[:project_name] + "Fonts.java"
+				puts "Aggiornata la classe Fonts"
 			end
 
 			# 7. Sostituisco ovunque trovo il package name di default con quello nuovo

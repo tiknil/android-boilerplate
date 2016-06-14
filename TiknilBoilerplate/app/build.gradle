@@ -1,0 +1,101 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.0"
+    defaultConfig {
+        applicationId 'com.tiknil.boilerplate'
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode 1
+        versionName "0.1.0"
+    }
+//    signingConfigs {
+//        release {
+//            storeFile file('keystore/release.jks')
+//            keyAlias 'KEY_ALIAS'
+//            storePassword "STORE_PASSWORD"
+//            keyPassword "KEY_PASSWORD"
+//        }
+//    }
+    buildTypes {
+        release {
+//            signingConfig signingConfigs.release
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            versionNameSuffix " Debug"
+            debuggable true
+        }
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    // Definiamo qui le versioni di alcuni package per modificare tutti insieme quelli che sono strettamente legati
+    final PLAY_SERVICES_VERSION = '8.4.0'
+    final SUPPORT_LIBRARY_VERSION = '23.4.0'
+    final RETROFIT_VERSION = '2.0.2'
+    final BUTTERKNIFE_VERSION = '8.0.1'
+    final DAGGER_VERSION = '2.2'
+    def daggerCompiler = "com.google.dagger:dagger-compiler:$DAGGER_VERSION"
+    // Permette di importare automaticamente i .jar che si inseriscono nella cartella "libs" del progetto
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    // Libreria per i test
+    testCompile 'junit:junit:4.12'
+    // Per le push notification: GCM sta per Google Cloud Messaging (https://developers.google.com/cloud-messaging/)
+    compile "com.google.android.gms:play-services-gcm:$PLAY_SERVICES_VERSION"
+    // Per Google Analytics
+    compile "com.google.android.gms:play-services-analytics:$PLAY_SERVICES_VERSION"
+    // Per poter utilizzare dei componenti gestiti da tutti gli smartphone con versioni Android non recenti (https://developer.android.com/topic/libraries/support-library/index.html?hl=id)
+    compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
+    // Per avere una versione migliore e avanzata di ListView (https://developer.android.com/training/material/lists-cards.html)
+    compile "com.android.support:recyclerview-v7:$SUPPORT_LIBRARY_VERSION"
+    // Sono degli elementi base avanzati proposti da Google per migliorare il feeling dell'utente tra le varie app
+    compile "com.android.support:cardview-v7:$SUPPORT_LIBRARY_VERSION"
+    // Per utilizzare alcune annotation molto utili durante il coding per maggior controllo (es: @NonNull, @MainThread, etc) (http://tools.android.com/tech-docs/support-annotations)
+    compile "com.android.support:support-annotations:$SUPPORT_LIBRARY_VERSION"
+    // Per la comunicazione con i web services (come AFNetworking)
+    compile "com.squareup.retrofit2:retrofit:$RETROFIT_VERSION"
+    // Per poter impostare Gson come convertitore richieste e risposte JSON
+    compile "com.squareup.retrofit2:converter-gson:$RETROFIT_VERSION"
+    // Per gestire le chiamate HTTP in modalità Reactive con RxJava
+    compile "com.squareup.retrofit2:adapter-rxjava:$RETROFIT_VERSION"
+    // Per il caricamento asincrono e il caching delle immagini per la visualizzazione veloce nelle liste (https://github.com/bumptech/glide)
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    // Reactive programming (come ReactiveCocoa - https://github.com/ReactiveX/RxAndroid)
+    compile 'io.reactivex:rxandroid:1.2.0'
+    compile 'io.reactivex:rxjava:1.1.5'
+    // EventBus: per gestire le notifiche interne all'app (come NSNotification)
+    compile 'org.greenrobot:eventbus:3.0.0'
+    // Crashlytics
+    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') { //Crashlytics
+        transitive = true;
+    }
+    // Facebook SDK (https://developers.facebook.com/docs/android/getting-started)
+    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
+    // Libreria per oscurare le preferenze dell'utente
+    compile 'com.scottyab:secure-preferences-lib:0.1.3'
+    // Libreria molto semplice per fare animazioni rapide (deprecata ormai, si può cercare di meglio)
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.daimajia.easing:library:1.0.1@aar'
+    compile 'com.daimajia.androidanimations:library:1.1.3@aar'
+    compile "com.google.dagger:dagger:$DAGGER_VERSION"
+    provided 'org.glassfish:javax.annotation:10.0-b28'
+
+    //Required by Dagger2
+    compile 'com.jakewharton.timber:timber:4.1.0'
+    compile "com.jakewharton:butterknife:$BUTTERKNIFE_VERSION"
+    // Form validation library semplice ed efficace (https://github.com/ragunathjawahar/android-saripaar)
+    compile 'com.mobsandgeeks:android-saripaar:2.0.2'
+    // APT dependencies
+    apt "com.jakewharton:butterknife-compiler:$BUTTERKNIFE_VERSION"
+    apt daggerCompiler
+    testApt daggerCompiler
+    androidTestApt daggerCompiler
+}

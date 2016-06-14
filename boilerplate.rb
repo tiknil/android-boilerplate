@@ -20,13 +20,13 @@ require 'find'
 $boilerplate_project_name = "TiknilBoilerplate"
 $boilerplate_package_name = "com.tiknil.boilerplate"
 $boilerplate_application_class = "BoilerplateApplication.java"
+$boilerplate_fonts_class = "BoilerplateFonts.java"
 $boilerplate_description = "Boilerplate"
-
-options = {:project_name => nil, :package_name => nil}
 ##
 
-
 ## Definizione delle opzioni che il comando ./boilerplate.rb può ricevere
+options = {:project_name => nil, :package_name => nil}
+
 parser = OptionParser.new do|opts|
 	opts.banner = "Come usare: boilerplate.rb [options]"
 	opts.on('-n', '--name project_name', 'Nome del progetto') do |name|
@@ -154,7 +154,14 @@ if $confirm == "Y"
 				file_name.sub! $boilerplate_application_class, options[:project_name] + "Application.java"
 			end
 
-			# 6. Sostituisco ovunque trovo il package name di default con quello nuovo
+			# 6. Se Trovo il file "BoilerplateFonts" lo sostituisco con il nome del progetto + Fonts
+			if file_name.include? $boilerplate_fonts_class
+				FileUtils.mv file_name, (file_name.sub $boilerplate_fonts_class, options[:project_name] + "Fonts.java")
+				#Aggiorno il nome del file per poterlo modificare
+				file_name.sub! $boilerplate_fonts_class, options[:project_name] + "Fonts.java"
+			end
+
+			# 7. Sostituisco ovunque trovo il package name di default con quello nuovo
 			file_content = File.read(file_name)
 			if ! file_content.valid_encoding?
 			  	s = file_content.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')

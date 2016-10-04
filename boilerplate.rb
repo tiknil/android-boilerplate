@@ -37,6 +37,10 @@ parser = OptionParser.new do|opts|
 		options[:package_name] = package_name;
 	end
 
+	opts.on('-o', '--output_folder output_folder', 'Percorso dove si vuole inserire il nuovo progetto (es: ~/Documents)') do |output_folder|
+		options[:output_folder] = output_folder;
+	end
+
 	opts.on('-h', '--help', 'Visualizza help') do
 		puts opts
 		exit
@@ -45,7 +49,7 @@ end
 parser.parse!
 ##
 
-# Controlli a riguardo del nome del progetto
+# Controlli dei parametri
 
 if options[:project_name] == nil
 	puts "Scrivi il nome del progetto che vuoi creare:"
@@ -64,8 +68,6 @@ end
 options[:project_name] = options[:project_name].gsub(" ","")
 
 
-# Controlli a riguardo del package name
-
 if options[:package_name] == nil
 	puts "Scrivi il package name del progetto (es: '#$boilerplate_package_name'):"
 	options[:package_name] = STDIN.gets.chomp
@@ -83,10 +85,24 @@ if package_name_parts_array.length != 3
 	abort("Attenzione: il nome del package deve essere formato da 3 parole separate da '.'")
 end
 
+if options[:output_folder] == nil
+	puts "Indica il percorso dove vuoi che il progetto venga spostato:"
+	options[:output_folder] = STDIN.gets.chomp
+end
+
+if options[:output_folder] == nil || options[:output_folder] == ""
+	abort("E' obbligatorio indicare il percorso di destinazione del progetto");
+end
+
+if !File.directory? options[:output_folder]
+	abort "Il percoso di destinazione del progetto (" + options[:output_folder]+ ")non è valido"
+end
+
 puts "Vuoi creare un progetto con nome '" + options[:project_name] + "' e package name '" + options[:package_name]+ "' a partire dal progetto boilerplate? (Y/n)"
 $confirm = STDIN.gets.chomp
 if $confirm == "Y"
-	
+	puts "Il progetto verrà creato e spostato in " + options[:output_folder]
+
 	# Iniziamo le procedure che servono per adeguare il progetto boilerplate ad un nuovo progetto
 
 	# 1. Copio l'intera cartella relativa al progetto Boilerplate in una nuova con il nome del progetto
@@ -107,6 +123,8 @@ if $confirm == "Y"
 	FileUtils.rm_rf(options[:project_name] + "/.git")
 	# 3. Elimino il file .vcs che indica la presenza di un repo git. Verrà ricreato una volta aperto il progetto quando sarà presente un repo inizializzato
 	FileUtils.rm options[:project_name] + "/.idea/vcs.xml"
+	# Elimino il file TiknilBoilerplate.iml che non serve più
+	FileUtils.rm options[:project_name] + "/" + $boilerplate_project_name + ".iml"
 	
 	puts "Eliminati i riferimenti al repo git, mantenendo il file .gitignore"
 	
@@ -169,7 +187,6 @@ if $confirm == "Y"
 				s = file_content
 			end
 
-
 			s = s.gsub($boilerplate_package_name,options[:package_name])
 			s = s.gsub($boilerplate_project_name,options[:project_name])
 			s = s.gsub($boilerplate_description,options[:project_name])
@@ -181,14 +198,30 @@ if $confirm == "Y"
 	end
 
 	puts "Sostituito ovunque il package name con il nuovo #{options[:package_name]}"
-	
-	# Dir.chdir(options[:project_name].to_s) do 
-	# 	puts system( "gradle clean" )
-	# end
-	# puts "Eseguito gradlew clean"
+
+	Dir.chdir(options[:project_name].to_s)	do
+		puts system "gradle clean"
+		
+		puts "Eseguito gradlew clean"
+
+		puts system "git init" 
+
+		puts system "git add *"
+
+		puts system "git commit -m \"Initial commit\""
+	end
+
+	output_path = options[:output_folder].to_s
+	if ! output_path.end_with? "/" 
+		output_path = output_path + "/"
+	end
+	output_path = output_path + options[:project_name].to_s
+
+	puts "Sposto il progetto in " + output_path
+
+	FileUtils.mv options[:project_name].to_s , output_path
 
 	puts "Ok, ora sei pronto per iniziare. Apri il progetto generato in AndroidStudio!"
-
 else
 	abort("Alla prossima!")
 end

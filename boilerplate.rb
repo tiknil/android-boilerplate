@@ -1,7 +1,7 @@
 #!/usr/bin/ruby -w
-# 
+#
 # Questo script serve per automatizzare il processo di creazione di un progetto dal progetto Boilerplate
-# 
+#
 # Aggiornato ad AndroidStudio 2.1.1 e Android 23
 #
 # © Tiknil
@@ -61,7 +61,7 @@ if options[:project_name] == nil
 end
 
 if options[:project_name] == ""
-	abort("Il nome del progetto non può essere vuoto, riprova")	
+	abort "Il nome del progetto non puo essere vuoto, riprova"
 end
 
 # Tolgo gli eventuali spazi all'interno del nome
@@ -95,19 +95,19 @@ if options[:output_folder] == nil || options[:output_folder] == ""
 end
 
 if !File.directory? options[:output_folder]
-	abort "Il percoso di destinazione del progetto (" + options[:output_folder]+ ")non è valido"
+	abort "Il percoso di destinazione del progetto (" + options[:output_folder]+ ")non e' valido"
 end
 
 puts "Vuoi creare un progetto con nome '" + options[:project_name] + "' e package name '" + options[:package_name]+ "' a partire dal progetto boilerplate? (Y/n)"
 $confirm = STDIN.gets.chomp
 if $confirm == "Y"
-	puts "Il progetto verrà creato e spostato in " + options[:output_folder]
+	puts "Il progetto verra' creato e spostato in " + options[:output_folder]
 
 	# Iniziamo le procedure che servono per adeguare il progetto boilerplate ad un nuovo progetto
 
 	# 1. Copio l'intera cartella relativa al progetto Boilerplate in una nuova con il nome del progetto
 	if File.directory?(options[:project_name])
-		puts "Esiste già una cartella con il nome del progetto, la vuoi sovrascrivere? (Y/n)"
+		puts "Esiste gia' una cartella con il nome del progetto, la vuoi sovrascrivere? (Y/n)"
 		$confirm = STDIN.gets.chomp
 		if $confirm == "Y"
 			FileUtils.rm_rf(options[:project_name])
@@ -116,7 +116,7 @@ if $confirm == "Y"
 		end
 	end
 	puts "Cartella di progetto pronta"
-	
+
 	FileUtils.cp_r $boilerplate_project_name + "/.", options[:project_name], :verbose => true
 
 	# 2. Elimino la cartella relativa al repo git ma lascio .gitignore
@@ -124,10 +124,13 @@ if $confirm == "Y"
 	# 3. Elimino il file .vcs che indica la presenza di un repo git. Verrà ricreato una volta aperto il progetto quando sarà presente un repo inizializzato
 	FileUtils.rm options[:project_name] + "/.idea/vcs.xml"
 	# Elimino il file TiknilBoilerplate.iml che non serve più
-	FileUtils.rm options[:project_name] + "/" + $boilerplate_project_name + ".iml"
-	
+	iml = options[:project_name] + "/" + $boilerplate_project_name + ".iml"
+	if File.exist? iml
+		FileUtils.rm iml
+	end
+
 	puts "Eliminati i riferimenti al repo git, mantenendo il file .gitignore"
-	
+
 	boilerplate_package_name_parts_array = $boilerplate_package_name.split(".")
 
 	# 4. Cambio il nome delle cartelle "com" nel primo campo del package name
@@ -135,7 +138,7 @@ if $confirm == "Y"
 	for $subfolder in ["/androidTest", "/main", "/test"]
 		folder = src_folder + $subfolder + "/java"
 
-		[0, 1, 2].each do |index| 
+		[0, 1, 2].each do |index|
 			if boilerplate_package_name_parts_array[index] != package_name_parts_array[index]
 				FileUtils.mv folder + "/" + boilerplate_package_name_parts_array[index], folder + "/" + package_name_parts_array[index]
 			end
@@ -145,24 +148,24 @@ if $confirm == "Y"
 	puts "Aggiornate le cartelle (package) che contengono le classi java"
 
 	Find.find(options[:project_name]).each do |file_name|
-		if (file_name != nil && 
-			File.file?(file_name) && 
-			!(file_name.include? "/generated") && 
-			!(file_name.include? "/intermediates") && 
-			!(file_name.include? "/outputs") && 
-			!(file_name.include? "/tmp") && 
-			!(file_name.include? "/gradle") && 
-			!(file_name.include? "/keystore") && 
-			!(file_name.include? "/libraries") && 
-			((file_name.include? ".java") || 
-			(file_name.include? ".xml") || 
-			(file_name.include? ".gradle") || 
-			(file_name.include? ".pro") || 
-			(file_name.include? ".name") || 
-			(file_name.include? ".iml") || 
-			(file_name.include? ".md") || 
+		if (file_name != nil &&
+			File.file?(file_name) &&
+			!(file_name.include? "/generated") &&
+			!(file_name.include? "/intermediates") &&
+			!(file_name.include? "/outputs") &&
+			!(file_name.include? "/tmp") &&
+			!(file_name.include? "/gradle") &&
+			!(file_name.include? "/keystore") &&
+			!(file_name.include? "/libraries") &&
+			((file_name.include? ".java") ||
+			(file_name.include? ".xml") ||
+			(file_name.include? ".gradle") ||
+			(file_name.include? ".pro") ||
+			(file_name.include? ".name") ||
+			(file_name.include? ".iml") ||
+			(file_name.include? ".md") ||
 			(file_name.include? ".properties")))
-			
+
 			# 5. Se Trovo il file "Application" lo sostituisco con il nome del progetto + Application
 			if file_name.include? $boilerplate_application_class
 				FileUtils.mv file_name, (file_name.sub $boilerplate_application_class, options[:project_name] + "Application.java")
@@ -183,7 +186,7 @@ if $confirm == "Y"
 			file_content = File.read(file_name)
 			if ! file_content.valid_encoding?
 			  	s = file_content.encode("UTF-16be", :invalid=>:replace, :replace=>"?").encode('UTF-8')
-			else 
+			else
 				s = file_content
 			end
 
@@ -192,7 +195,7 @@ if $confirm == "Y"
 			s = s.gsub($boilerplate_description,options[:project_name])
 			s = s.gsub($boilerplate_description.downcase,options[:project_name].downcase)
 			new_content = s
-			
+
 			File.open(file_name, "w") { |file| file.puts new_content }
 		end
 	end
@@ -201,10 +204,10 @@ if $confirm == "Y"
 
 	Dir.chdir(options[:project_name].to_s)	do
 		puts system "gradle clean"
-		
+
 		puts "Eseguito gradlew clean"
 
-		puts system "git init" 
+		puts system "git init"
 
 		puts system "git add *"
 
@@ -212,7 +215,7 @@ if $confirm == "Y"
 	end
 
 	output_path = options[:output_folder].to_s
-	if ! output_path.end_with? "/" 
+	if ! output_path.end_with? "/"
 		output_path = output_path + "/"
 	end
 	output_path = output_path + options[:project_name].to_s
@@ -225,5 +228,3 @@ if $confirm == "Y"
 else
 	abort("Alla prossima!")
 end
-	
-
